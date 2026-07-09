@@ -1,0 +1,17 @@
+# .NET Build-Ausgaben
+bin/
+obj/
+*.user
+
+# Geheimnisse / lokale Konfiguration — NIEMALS committen!
+appsettings.Local.json
+.env
+secrets.json
+
+# IDE
+.vs/
+.idea/
+.vscode/
+
+# Sonstiges
+*.log

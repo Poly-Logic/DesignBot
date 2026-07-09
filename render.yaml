@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: designbot
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: Cloudflare__AccountId
+        sync: false
+      - key: Cloudflare__ApiToken
+        sync: false

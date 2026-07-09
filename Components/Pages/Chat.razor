@@ -1,0 +1,170 @@
+@page "/"
+@rendermode InteractiveServer
+@using DesignBot.Models
+@using DesignBot.Services
+@inject IAiService Ai
+@inject IImageService Images
+@inject IJSRuntime JS
+
+<PageTitle>DesignBot</PageTitle>
+
+<div class="chat-wrapper @(messages.Count == 0 && !isLoading ? "empty" : "")">
+
+    <div class="chat-messages" id="chatMessages">
+        @if (messages.Count == 0)
+        {
+            <div class="welcome">
+                <Logo Size="126" />
+                <h2>DESIGNBOT</h2>
+                <span class="welcome-tag">AI DESIGN STUDIO</span>
+                @if (!imageMode)
+                {
+                    <p>Beschreib mir deine Idee – ich gebe dir Designvorschläge (Farben, Schriften, Layout).</p>
+                    <div class="examples">
+                        <button @onclick='() => input = "Landingpage für ein gemütliches Café"'>Café-Landingpage</button>
+                        <button @onclick='() => input = "Portfolio-Website für einen Fotografen"'>Foto-Portfolio</button>
+                        <button @onclick='() => input = "Dashboard für eine Fitness-App"'>Fitness-Dashboard</button>
+                    </div>
+                }
+                else
+                {
+                    <p>Beschreib ein Design – ich generiere dir ein <strong>Bild-Mockup</strong> dazu.</p>
+                    <div class="examples">
+                        <button @onclick='() => input = "Landingpage für ein Café, warme Farben"'>Café-Mockup</button>
+                        <button @onclick='() => input = "Login-Screen einer Banking-App, minimalistisch"'>Banking-Login</button>
+                        <button @onclick='() => input = "Online-Shop für Sneaker, modern und bunt"'>Sneaker-Shop</button>
+                    </div>
+                }
+            </div>
+        }
+
+        @foreach (var msg in messages)
+        {
+            <div class="msg @(msg.IsUser ? "msg-user" : "msg-bot")">
+                <div class="msg-avatar">@(msg.IsUser ? "Du" : "DB")</div>
+                <div class="msg-bubble">
+                    @if (!string.IsNullOrEmpty(msg.Content))
+                    {
+                        <div>@msg.Content</div>
+                    }
+                    @if (!string.IsNullOrEmpty(msg.ImageDataUrl))
+                    {
+                        <img class="gen-image" src="@msg.ImageDataUrl" alt="Generiertes Design" />
+                    }
+                </div>
+            </div>
+        }
+
+        @if (isLoading)
+        {
+            <div class="msg msg-bot">
+                <div class="msg-avatar">DB</div>
+                <div class="msg-bubble typing"><span></span><span></span><span></span></div>
+            </div>
+        }
+    </div>
+
+    <div class="chat-toolbar">
+        <div class="mode-toggle">
+            <button class="@(imageMode ? "" : "active")" @onclick="() => imageMode = false" disabled="@isLoading">Text-Beratung</button>
+            <button class="@(imageMode ? "active" : "")" @onclick="() => imageMode = true" disabled="@isLoading">Bild-Design</button>
+        </div>
+
+        @if (!imageMode)
+        {
+            <div class="model-picker">
+                <label for="model">Modell</label>
+                <select id="model" @bind="selectedModel" disabled="@isLoading">
+                    @foreach (var m in Ai.AvailableModels)
+                    {
+                        <option value="@m">@m</option>
+                    }
+                </select>
+                <span class="select-arrow"></span>
+            </div>
+        }
+        else
+        {
+            <div class="model-picker"><span class="img-model">FLUX.1-schnell</span></div>
+        }
+
+        <button class="btn-clear" @onclick="() => messages.Clear()" disabled="@isLoading">Neu</button>
+    </div>
+
+    <div class="chat-input">
+        <textarea @bind="input" @bind:event="oninput" @onkeydown="OnKeyDown"
+                  placeholder="@(imageMode ? "Beschreibe das Design, das ich als Bild erzeugen soll..." : "Beschreibe deine Idee...")"
+                  disabled="@isLoading" rows="1"></textarea>
+        <button class="btn-send" @onclick="Send" disabled="@(isLoading || string.IsNullOrWhiteSpace(input))"
+                title="@(imageMode ? "Bild erzeugen" : "Senden")">
+            <svg width="27" height="27" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 3L10.5 13.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                <path d="M21 3L14.3 21L10.5 13.5L3 9.7L21 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+            </svg>
+        </button>
+    </div>
+
+</div>
+
+@code {
+    private readonly List<ChatMessage> messages = new();
+
+    private string input = "";
+    private string selectedModel = "gemini-2.5-flash";
+    private bool isLoading;
+    private bool imageMode;
+
+    protected override void OnInitialized()
+    {
+        selectedModel = Ai.AvailableModels.FirstOrDefault() ?? selectedModel;
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !e.ShiftKey)
+            await Send();
+    }
+
+    private async Task Send()
+    {
+        var text = input.Trim();
+        if (string.IsNullOrEmpty(text) || isLoading)
+            return;
+
+        messages.Add(new ChatMessage { Role = "user", Content = text });
+        input = "";
+        isLoading = true;
+        await ScrollToBottom();
+
+        if (imageMode)
+        {
+            var (dataUrl, error) = await Images.GenerateImageAsync(text);
+            messages.Add(new ChatMessage
+            {
+                Role = "model",
+                Content = error ?? $"Hier ein Design-Vorschlag für: „{text}“",
+                ImageDataUrl = dataUrl
+            });
+        }
+        else
+        {
+            var reply = await Ai.GetReplyAsync(messages, selectedModel);
+            messages.Add(new ChatMessage { Role = "model", Content = reply });
+        }
+
+        isLoading = false;
+        await ScrollToBottom();
+    }
+
+    private async Task ScrollToBottom()
+    {
+        StateHasChanged();
+        try
+        {
+            await JS.InvokeVoidAsync("scrollChatToBottom");
+        }
+        catch
+        {
+        }
+    }
+}

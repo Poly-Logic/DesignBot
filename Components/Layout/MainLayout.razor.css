@@ -1,0 +1,76 @@
+.app {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.app-header {
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 34px 42px 0;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #2b313a;
+}
+
+.brand-text {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo {
+    letter-spacing: 7px;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: normal;
+    color: #2b313a;
+}
+
+.logo-tag {
+    letter-spacing: 2px;
+    font-size: 8px;
+    line-height: normal;
+    color: #7d8797;
+    white-space: nowrap;
+}
+
+main {
+    position: relative;
+    z-index: 2;
+    flex: 1;
+    min-height: 0;
+}
+
+#blazor-error-ui {
+    background: rgba(255, 255, 255, 0.97);
+    color: #2b313a;
+    border-top: 1px solid rgba(125, 135, 151, 0.25);
+    bottom: 0;
+    box-shadow: 0 -1px 12px rgba(75, 84, 115, 0.12);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+        color: #7a4df2;
+    }

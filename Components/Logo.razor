@@ -1,0 +1,24 @@
+<svg width="@Size" height="@Size" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M34 12 C63 14 80 34 78 58 C65 74 45 88 25 82 C18 58 17 33 34 12Z"
+          stroke="url(#logo-gradient)" stroke-width="@(Compact ? "3" : "2.6")" fill="none" />
+    <path d="M34 12 L78 58 L25 82 M34 12 L45 47 L25 82 M45 47 L78 58 M45 47 L64 23"
+          stroke="url(#logo-gradient)" stroke-width="@(Compact ? "2" : "1.7")" opacity="0.8" />
+    <circle cx="34" cy="12" r="4" fill="#18c6f4" />
+    <circle cx="64" cy="23" r="4" fill="#8f5cff" />
+    <circle cx="78" cy="58" r="4" fill="#7a4df2" />
+    <circle cx="25" cy="82" r="4" fill="#18c6f4" />
+    <circle cx="45" cy="47" r="4" fill="#7a4df2" />
+    <circle cx="51" cy="72" r="3.7" fill="#9c8cff" />
+    <defs>
+        <linearGradient id="logo-gradient" x1="16" y1="12" x2="85" y2="85" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#14c8f5" />
+            <stop offset="0.5" stop-color="#597fff" />
+            <stop offset="1" stop-color="#8f5cff" />
+        </linearGradient>
+    </defs>
+</svg>
+
+@code {
+    [Parameter] public int Size { get; set; } = 64;
+    [Parameter] public bool Compact { get; set; }
+}
